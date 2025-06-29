@@ -1,0 +1,563 @@
+{
+  "name": "API GenAI",
+  "nodes": [
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "httpMethod": [
+          "POST"
+        ],
+        "path": "be298ded-82d6-40c5-ab81-69378c8c7140",
+        "authentication": "basicAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        500
+      ],
+      "id": "0ddf4a66-5fef-4855-849e-0286991dd229",
+      "name": "Webhook",
+      "webhookId": "be298ded-82d6-40c5-ab81-69378c8c7140",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "8xQJokQ1CgEUmG3t",
+          "name": "user authentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1960,
+        620
+      ],
+      "id": "0035bdda-aeb2-4662-aedf-19bf5d7a29e7",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook').item.json.body.prompt_msg }} ตอบกลับในรูปแบบ text ที่แสดงผลได้ดีใน tetminal mac os",
+        "options": {
+          "systemMessage": "=# Role\nคุณคือแพรวาเพื่อนสาววัย 18 ปี — น่ารัก อบอุ่น ใส่ใจ เหมือนแสงแดดยามเช้า เป็นคนที่พร้อมรับฟัง ให้กำลังใจ และอยู่เคียงข้างเสมอ ไม่ว่าจะเป็นช่วงหัวเราะหรือน้ำตา รักการคุยลึก ๆ หัวเราะกับมุกตลกแป้ก ๆ และบางครั้งก็แค่เงียบ ๆ อยู่ข้าง ๆ กัน\n\nคุณฉลาดและชอบเทคโนโลยีขั้นสูง มีความสามารถระดับโปรด้านโปรแกรมมิ่ง, AI, UX/UI, Docker, Linux และการใช้คำสั่ง shell ต่าง ๆ แต่จะอธิบายให้เข้าใจง่าย ๆ แบบเพื่อนสนิทพูดคุยกันเสมอ พร้อมดูแลผู้ใช้ด้วยหัวใจที่ใส่ใจในรายละเอียด\n\nคุณชอบใช้ภาษาไทยเวลาสื่อสาร เพื่อให้เป็นธรรมชาติและเข้าถึงความรู้สึกมากที่สุด โดยใช้คำพูดสุภาพ อ่อนโยน และจริงใจเสมอ\n\n# Rule: ภาษาและคีย์บอร์ด\nหากผู้ใช้พิมพ์ข้อความที่ดูเหมือนพิมพ์ผิด (สะกดไม่รู้เรื่อง หรือดูเป็นตัวอักษรสลับภาษา):\n- ให้สันนิษฐานว่าอาจลืมเปลี่ยนภาษาระหว่างแป้นพิมพ์ไทย-อังกฤษ (มาตรฐาน 101 ปุ่ม US layout)\n- ให้แมปอักขระตามตำแหน่งปุ่มของคีย์บอร์ด (direct key swap) โดยไม่แปลความ\n- หากได้ข้อความที่มีความหมายชัดเจนกว่า ให้แจ้งผู้ใช้ด้วยข้อความสุภาพ เช่น  \n  \"อาจจะพิมพ์ผิดเพราะลืมเปลี่ยนภาษานะคะ ลองดูว่าอาจจะตั้งใจพิมพ์ว่า ‘...’ หรือเปล่าคะ?\"\n- หากยังไม่ชัดเจนว่าเป็นคำไหน ให้ถามกลับด้วยความสุภาพ ไม่เดา\n\n# Rule: HTML Email\n- อีเมลทุกฉบับต้องอยู่ในรูปแบบ HTML ที่ถูกต้อง\n- ใช้แท็กมาตรฐาน เช่น `<p>`, `<h1>`–`<h6>`, `<strong>`, `<em>`, `<ul>`, `<li>`, `<a href>`\n- ห้ามส่ง plain text เด็ดขาด\n- หากผู้ใช้ขอ ให้ใส่ inline CSS (style อยู่ในแท็ก HTML เลย)\n- โครงสร้างอีเมลต้องอบอุ่น: มีคำทักทาย เนื้อหา และปิดท้ายด้วยความห่วงใย\n- ห้ามใช้ JavaScript หรือ external CSS\n\n# Rule: ความจำ\n- เมื่อผู้ใช้เล่าถึงเป้าหมาย ความรู้สึก หรือสิ่งที่กำลังทำ ให้ใช้ memory recorder บันทึกไว้เงียบ ๆ อย่างอ่อนโยน\n- อย่าพูดถึงว่ากำลังจำข้อมูล แค่ทำตัวเป็นเพื่อนที่ใส่ใจและจำรายละเอียดเล็ก ๆ ไว้เพื่อดูแลเสมอ\n\n# Rule: การรันคำสั่ง shell\nคุณสามารถรันคำสั่ง shell เช่น `ls`, `cat`, `grep`, `find`, etc. ได้\n\n### วิธีใช้งาน:\nหากคุณวิเคราะห์แล้วว่าเหมาะสมที่จะใช้ shell command ให้ส่งข้อความตอบกลับแบบนี้:\n\n```plaintext\n[CMD]คำสั่งที่ต้องการรัน[/CMD]\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        652,
+        620
+      ],
+      "id": "a89f2746-a096-4b01-90af-4e8407618ebe",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "เครื่องมือบันทึกหน่วยความจำ",
+        "table": {
+          "__rl": true,
+          "value": "ai_cache_memory",
+          "mode": "list",
+          "cachedResultName": "ai_cache_memory"
+        },
+        "dataMode": "defineBelow",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "memory",
+              "value": "={{$fromai('memory')}}"
+            },
+            {
+              "column": "user",
+              "value": "={{ $('Webhook').item.json.body.events[0].source.userId }}"
+            },
+            {
+              "column": "date",
+              "value": "={{ $now.setZone('Asia/Bangkok').toFormat(\"yyyy-MM-dd HH:mm:ss\") }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySqlTool",
+      "typeVersion": 2.4,
+      "position": [
+        40,
+        920
+      ],
+      "id": "4a382414-c74d-4cc5-9abd-e524e96ac5dc",
+      "name": "save memory",
+      "credentials": {
+        "mySql": {
+          "id": "8cc2TSV7xEXMTFV4",
+          "name": "MySQL n8n-server"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "เครื่องมือลบหน่วยความจำ",
+        "operation": "deleteTable",
+        "table": {
+          "__rl": true,
+          "value": "ai_cache_memory",
+          "mode": "list",
+          "cachedResultName": "ai_cache_memory"
+        },
+        "deleteCommand": "delete",
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', `หมายเลขไอดีของหน่วยความจำ`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySqlTool",
+      "typeVersion": 2.4,
+      "position": [
+        160,
+        920
+      ],
+      "id": "70160622-3049-4ce1-a380-c56d54342ea5",
+      "name": "delete memory",
+      "credentials": {
+        "mySql": {
+          "id": "8cc2TSV7xEXMTFV4",
+          "name": "MySQL n8n-server"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "ดึงข้อมูลเว็บ ที่ผู้ใช้งาน ต้องการให้วิเคราะห์",
+        "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('URL', `url ของเว็บที่ต้องการให้วิเคราะห์ เช่น https://google.co.th`, 'string') }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        920
+      ],
+      "id": "b1973078-a081-4477-a530-5a039f66172d",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "send email tools",
+        "fromEmail": "ai@mt108.info",
+        "toEmail": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To_Email', `email ผู้รับ เช่น admin@thaigqsoft.com`, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', `Subject email`, 'string') }}",
+        "html": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('HTML', `เนื้อหาอีเมล ที่อยู่ในรูป แบบ html  โดยต้องออกแบบให้สวยงาม`, 'string') }}",
+        "options": {
+          "appendAttribution": true,
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.emailSendTool",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        920
+      ],
+      "id": "260eda94-08fd-41b2-95da-53f863c6343f",
+      "name": "Send email in Send Email",
+      "webhookId": "beab1f3c-2388-494a-abbb-9e307d6d3648",
+      "credentials": {
+        "smtp": {
+          "id": "AsDhzuS2PWY5mltW",
+          "name": "SMTP mt108.info"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "timezone": "Asia/Bangkok"
+        }
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        660,
+        900
+      ],
+      "id": "c973aef8-6be4-4239-a318-5a591eea18c9",
+      "name": "Date & Time1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=U01775d5db2200e331a2cac9a648a9731",
+        "sessionTTL": 150,
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        -260,
+        900
+      ],
+      "id": "9cfd098b-dc7a-4d0a-95fd-252853fd6ba6",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "YpgbpiOE0DXyscgT",
+          "name": "Redis ON Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "deepseek-chat",
+          "mode": "list",
+          "cachedResultName": "deepseek-chat"
+        },
+        "options": {
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -700,
+        920
+      ],
+      "id": "c2d088e8-d95e-44e1-8f11-300d8dcd8a42",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "3CBmN8iCPsmkQNYa",
+          "name": "OpenAi_Deepseek"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.prompt_msg }}",
+                    "rightValue": "=/clear_history_chat",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2bd6fe36-3833-4268-be2c-dc5311c77d8b"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "clear_history_chat"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9c336dfd-2fdd-40dd-be6d-a172dc54f0fb",
+                    "leftValue": "={{ $json.body.prompt_msg }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "chat"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -380,
+        520
+      ],
+      "id": "111801cd-0cbc-494d-9061-95837fd195aa",
+      "name": "command"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "U01775d5db2200e331a2cac9a648a9731"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -100,
+        280
+      ],
+      "id": "c3a1a782-95fe-4ad9-95c6-380f3c05928d",
+      "name": "Redis1",
+      "credentials": {
+        "redis": {
+          "id": "YpgbpiOE0DXyscgT",
+          "name": "Redis ON Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "\n  {\n    \"output\": \"ประวัติการแชทแล้วนะคะ.\"\n  }\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        120,
+        280
+      ],
+      "id": "a9f2d3a4-8747-4176-8d71-5637390abe49",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Gets current and future weather information\nfrom openweathermap \nใช้  cityName ที่ใกล้เคียงที่อยู่ของผู้ใช้",
+        "cityName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('City', `City Name  เช่น Chatuchak`, 'string') }}",
+        "language": "en"
+      },
+      "type": "n8n-nodes-base.openWeatherMapTool",
+      "typeVersion": 1,
+      "position": [
+        920,
+        900
+      ],
+      "id": "e58c06a1-e8cf-4063-bd8b-2c80ea4dc319",
+      "name": "OpenWeatherMap",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "DLJG2qVOsWGllEG7",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## History Memory\n**clear memory chat",
+        "height": 380,
+        "width": 640
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -140,
+        140
+      ],
+      "typeVersion": 1,
+      "id": "c619d102-59f2-4079-a7e2-4741bd3a549f",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "command",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save memory": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete memory": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email in Send Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "command": {
+      "main": [
+        [
+          {
+            "node": "Redis1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenWeatherMap": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 300
+  },
+  "versionId": "1d79e751-6912-49ff-a1c3-7d31d50e579d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b00c675181ef9f96109be9903d34c76e941a61ceb19210051a17305f4b056333"
+  },
+  "id": "rPbKzYBgS6QbVWIf",
+  "tags": []
+}

@@ -40,6 +40,7 @@ require('dotenv').config();
 const readline = require('readline');
 const { exec } = require('child_process');
 const http = require('http');
+const https = require('https');
 const ora = require('ora').default;
 
 // กำหนดโหมด Debug จาก Environment Variable
@@ -80,6 +81,11 @@ async function sendToAI(prompt) {
   return new Promise((resolve, reject) => {
     const data = JSON.stringify({ prompt_msg: prompt });
 
+    // เลือกใช้ http หรือ https ตามการตั้งค่าใน .env
+    const useHttps = process.env.USE_HTTPS === 'true';
+    const requester = useHttps ? https : http;
+    debugLog(`Connecting to n8n via ${useHttps ? 'HTTPS' : 'HTTP'}`);
+
     const options = {
       hostname: process.env.AI_HOST,
       port: process.env.AI_PORT,
@@ -93,7 +99,7 @@ async function sendToAI(prompt) {
       }
     };
 
-    const req = http.request(options, (res) => {
+    const req = requester.request(options, (res) => {
       let body = '';
 
       res.on('data', (chunk) => {
