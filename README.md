@@ -30,6 +30,14 @@ AI CLI Chat คืออินเทอร์เฟซบรรทัดคำ�
 
 ---
 
+### 🖥️ ความต้องการของระบบ
+- **ระบบปฏิบัติการ:** macOS, Windows, หรือ Linux
+- **หน่วยความจำ (RAM):** แนะนำ 2GB ขึ้นไป
+- **พื้นที่จัดเก็บ:** 100MB
+- **การเชื่อมต่ออินเทอร์เน็ต:** สำหรับการเชื่อมต่อกับ AI API
+
+---
+
 ### ⚙️ หลักการทำงาน
 
 1. โหลดค่าจาก `.env` และสร้าง session ID
@@ -45,7 +53,7 @@ AI CLI Chat คืออินเทอร์เฟซบรรทัดคำ�
 ### 🚀 การติดตั้งและเริ่มต้นใช้งาน
 
 #### สิ่งที่ต้องมี
-- Node.js (แนะนำเวอร์ชัน 16 ขึ้นไป)
+- Node.js (แนะนำเวอร์ชัน 20 ขึ้นไป)
 - Git
 - n8n instance (สำหรับรัน workflow ตัวอย่าง)
 
@@ -113,6 +121,14 @@ Ideal for developers or anyone looking for a smart and interactive terminal assi
 
 ---
 
+## 🖥️ System Requirements
+- **Operating System:** macOS, Windows, or Linux
+- **RAM:** 2GB or more recommended
+- **Disk Space:** 100MB of free space
+- **Internet Connection:** Required to connect to the AI API
+
+---
+
 ## ⚙️ How It Works
 
 1. **Initialization**  
@@ -138,7 +154,7 @@ Ideal for developers or anyone looking for a smart and interactive terminal assi
 
 ### Prerequisites
 
-- Node.js (v16 or later recommended)
+- Node.js (v20 or later recommended)
 - Git
 - An n8n instance (to run the example workflow)
 
