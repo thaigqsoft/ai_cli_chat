@@ -233,11 +233,11 @@ async function mainLoop() {
         rl.pause();
         spinner.start();
         // ส่ง prompt พิเศษเพื่อให้ AI หรือระบบเบื้องหลัง (n8n) ล้างประวัติ
-        await sendToAI('/clear_history');
+        await sendToAI('/clear_history_chat');
         spinner.succeed('✅ ส่งคำสั่งล้างประวัติในฝั่ง AI เรียบร้อยแล้วค่ะ');
       } catch (err) {
         spinner.fail(String(err.message || err));
-        debugLog('เกิดข้อผิดพลาดตอนส่ง /clear_history');
+        debugLog('เกิดข้อผิดพลาดตอนส่ง /clear_history_chat');
       } finally {
         if (spinner.isSpinning) {
           spinner.stop();
@@ -247,6 +247,7 @@ async function mainLoop() {
       continue;
     }
 
+    
     let currentPrompt = text;
     let isInteractionDone = false;
     const spinner = ora('🤔 กำลังคิด...');
