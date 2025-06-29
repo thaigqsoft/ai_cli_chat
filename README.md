@@ -1,295 +1,82 @@
-# AI CLI Chat (n8n Edition)
+# 🤖 AI CLI Chat
 
-**English | ภาษาไทย**
+สคริปต์นี้สร้าง Command-Line Interface (CLI) สำหรับการแชทกับ AI แบบโต้ตอบ ถูกออกแบบมาให้เป็นลูปการสนทนาที่สามารถรัน system command ตามคำแนะนำของ AI ได้ ทำให้เกิดเป็นผู้ช่วยบนเทอร์มินัลที่ทรงพลังและทำงานผ่านการสนทนา
 
-An intelligent chatbot on the Command Line that allows you to execute local machine commands directly, powered by a customizable AI workflow on n8n. This project transforms your terminal into a personal assistant, enabling you to chat, issue commands, and get help writing complex shell commands with ease.
+*This script creates an interactive Command-Line Interface (CLI) for chatting with an AI. It's designed as a conversational loop that can execute system commands based on the AI's suggestions, creating a powerful, conversation-driven terminal assistant.*
 
----
+## 🎬 ตัวอย่างการใช้งาน (Demo)
 
-## 🇬🇧 English Version
+คลิกที่รูปเพื่อดูวิดีโอ / Click the image to watch the video:
 
-### 🚀 How it Works
+[![AI CLI Chat Demo](https://img.youtube.com/vi/GHUQ3Oyn-rM/maxresdefault.jpg)](https://youtu.be/GHUQ3Oyn-rM)
 
-The chatbot operates with a simple flow:
+## ✨ คุณสมบัติเด่น (Features)
 
-`You (Terminal)` ↔️ `CLI Script (chatloop.js)` ↔️ `n8n Webhook` ↔️ `AI Model (OpenAI, Gemini, etc.)`
+-   **Interactive Chat Loop**: วนรับ-ส่งข้อความกับผู้ใช้อย่างต่อเนื่อง<br>*(Continuously loops to send and receive messages with the user.)*
+-   **AI Integration**: สื่อสารกับ AI service (เช่น n8n workflow) ผ่าน HTTP API<br>*(Communicates with an AI service, e.g., an n8n workflow, via an HTTP API.)*
+-   **System Command Execution**: AI สามารถร้องขอให้รัน shell command ได้ (เช่น `ls -la`, `cat file.txt`) โดยสคริปต์จะดักจับคำร้องขอ, ถามผู้ใช้เพื่อยืนยันความปลอดภัย, รันคำสั่ง, แล้วส่งผลลัพธ์กลับไปให้ AI วิเคราะห์ต่อ<br>*(The AI can request to run shell commands. The script intercepts the request, asks the user for confirmation, executes the command, and sends the result back to the AI for analysis.)*
+-   **Natural Language Confirmation**: ผู้ใช้สามารถอนุญาตการรันคำสั่งด้วยภาษาธรรมชาติ (เช่น "yes", "ok", "ได้เลย")<br>*(Users can authorize command execution using natural language, e.g., "yes", "ok", "go ahead".)*
+-   **Asynchronous Operations**: ใช้ `async/await` เพื่อจัดการ I/O แบบไม่ปิดกั้น ทั้งการรับ input, การเรียก API, และการรันคำสั่ง<br>*(Uses `async/await` to handle non-blocking I/O for user input, API calls, and command execution.)*
+-   **Session Management**: กำหนด Session ID ที่ไม่ซ้ำกันสำหรับการรันแต่ละครั้ง หรือใช้ ID เดิมจาก environment variable (`AI_SESSION_ID`) เพื่อให้สามารถสนทนาต่อจากเดิมได้<br>*(Assigns a unique Session ID for each run or uses a persistent ID from an environment variable (`AI_SESSION_ID`) to continue previous conversations.)*
+-   **User-Friendly Feedback**: ใช้ loading spinner (`ora`) เพื่อแสดงสถานะว่า AI กำลังประมวลผล<br>*(Uses a loading spinner (`ora`) to indicate when the AI is processing.)*
+-   **Slash Commands**: รองรับคำสั่งพิเศษเช่น `/help`, `/clear`, และ `/exit`<br>*(Supports special commands like `/help`, `/clear`, and `/exit`.)*
+-   **Debug Mode**: มีโหมดดีบักที่เปิดใช้งานผ่าน environment variable เพื่อดู log การทำงานโดยละเอียด<br>*(Includes a debug mode, enabled via an environment variable, for detailed operational logging.)*
 
-1.  You type a message in your terminal.
-2.  The `chatloop.js` script sends your message to an n8n Webhook.
-3.  The n8n Workflow processes the message with your chosen AI Model.
-4.  The AI responds, and the script displays the output in your terminal.
-5.  If the AI wants to run a command, the script will always ask for your permission first.
+## ⚙️ หลักการทำงาน (How it Works)
 
-### ✨ Features
+1.  **Initialization**: สคริปต์จะโหลดค่าต่าง ๆ จากไฟล์ `.env` และกำหนด Session ID สำหรับการสนทนา<br>*(The script loads configurations from the `.env` file and sets a Session ID for the conversation.)*
+2.  **Main Loop**: เริ่มต้น `while` loop ที่ไม่สิ้นสุดเพื่อรอรับ input จากผู้ใช้<br>*(Starts an infinite `while` loop to await user input.)*
+3.  **AI Request**: input ของผู้ใช้จะถูกส่งไปเป็น prompt ให้กับ AI service พร้อมกับ `session_id`<br>*(The user's input is sent as a prompt to the AI service, along with the `session_id`.)*
+4.  **Response Parsing**: สคริปต์จะตรวจสอบการตอบกลับของ AI<br>*(The script parses the AI's response.)*
+    -   หากมีคำสั่ง `[CMD]...[/CMD]`: ดึงคำสั่ง, ถามผู้ใช้เพื่อขออนุญาต, รันคำสั่ง, และส่งผลลัพธ์กลับไปให้ AI<br>*(If it contains a command within `[CMD]...[/CMD]` tags: it extracts the command, asks for permission, executes it, and sends the result back to the AI.)*
+    -   หากเป็นข้อความธรรมดา: แสดงผลให้ผู้ใช้เห็นเป็นคำตอบสุดท้าย<br>*(If it's plain text: it's displayed to the user as the final answer.)*
+5.  **Error Handling**: มี `try...catch` ที่ครอบคลุมเพื่อจัดการข้อผิดพลาดที่อาจเกิดขึ้น<br>*(A comprehensive `try...catch` block handles potential errors.)*
 
-*   **Interactive Chat:** Engage in continuous conversations with the AI right from your terminal.
-*   **System Command Execution:** The AI can analyze requests and ask to run shell commands (e.g., `ls -la`, `cat file.txt`) to assist you.
-*   **n8n Integration:** Easily connect to your custom-built AI workflows on n8n.
-*   **Natural Language Confirmation:** Approve command execution using natural language (e.g., "yes", "ok", "y").
-*   **Slash Commands:** Convenient special commands like `/help`, `/clear`, and `/exit`.
-*   **Debug Mode:** A developer mode to view detailed background operations.
+## 🚀 การติดตั้งและเริ่มต้นใช้งาน (Getting Started)
 
-### 🎬 Demo Video
-
-[![AI CLI Chat Demo](https://img.youtube.com/vi/GHUQ3Oyn-rM/0.jpg)](https://youtu.be/GHUQ3Oyn-rM)
-
-*Click the image to watch the demo on YouTube.*
-
-### ⚙️ Prerequisites
-
-*   Node.js (v20.19.1 or higher)
-*   `npm` (comes with Node.js)
-*   A running n8n instance (Cloud, Self-hosted, or Desktop).
-
-### 🛠️ Installation and Setup
-
-#### Step 1: Clone the Repository
-
-```bash
-git clone <your-repository-url>
-cd ai_cli_chat
-```
-
-#### Step 2: Install Dependencies
-
-```bash
-npm install
-```
-
-#### Step 3: Set up the n8n Workflow
-
-> **💡 Tip:** For convenience, you can import the pre-built workflow from the `Workflow_For_N8N/AI_CLI_Chat_Workflow.json` file directly into your n8n instance and skip to Step 4!
->
-> If you prefer to build the workflow yourself, follow the steps below.
-
-This project requires a basic n8n workflow with the following structure:
-
-`[Webhook]` → `[AI Node]` → `[Respond to Webhook]`
-
-1.  **Webhook Node (Trigger):**
-    *   **Authentication:** `Basic Auth`
-    *   **HTTP Method:** `POST`
-    *   **Respond:** `When webhook is called`
-    *   **Path:** Set your desired path (e.g., `ai-chat`).
-    *   Once configured, copy the **Test URL** and **Basic Auth Credentials** for the next step.
-
-2.  **AI Node (e.g., OpenAI, Gemini):**
-    *   Connect this node to the Webhook.
-    *   Set it to receive the prompt from the Webhook's input using the expression: `{{ $json.body.prompt_msg }}`
-    *   Configure the AI's System Prompt or Persona as you wish.
-
-3.  **Respond to Webhook Node:**
-    *   Connect this node to the AI Node.
-    *   Configure it to send data back in JSON format with a key named `output` and the value being the response from the AI Node.
-    *   **Example Expression for OpenAI:** `{{ $('OpenAI').json.choices[0].message.content }}` (This may vary depending on the AI service used).
-
-#### Step 4: Create Configuration File
-
-The `.env` file is used to store configuration settings and secrets (like credentials), allowing the script to connect to your n8n instance without hardcoding them. For security, this file is not tracked by Git.
-
-Copy the example file `.env.example` to a new file named `.env`:
-
-```bash
-cp .env.example .env
-```
-
-Open the `.env` file and fill in your details:
-
-```ini
-# Address of your n8n instance (without http:// or https://)
-AI_HOST=your-n8n-instance.com
-
-# Port for n8n (leave blank for standard ports 80/443)
-AI_PORT=5678
-
-# Path of your Webhook in n8n (e.g., /webhook/ai-chat)
-AI_PATH=/webhook/ai-chat
-
-# Use HTTPS (true) or HTTP (false) for the connection
-USE_HTTPS=true
-
-# Basic Auth credentials from the Webhook (format: username:password)
-AI_AUTH=your_username:your_password
-
-# Enable/disable debug mode (true/false)
-DEBUG_MODE=false
-```
-
-### 🚀 Usage
-
-1.  **Make the script executable:**
+1.  **Clone a repository (ถ้ามี) / Clone the repository:**
     ```bash
-    chmod +x chatloop.js
+    git clone <your-repository-url>
+    cd <repository-directory>
     ```
 
-2.  **Start chatting:**
+2.  **ติดตั้ง Dependencies / Install Dependencies:**
+    สคริปต์นี้ต้องการ `dotenv` และ `ora` คุณสามารถติดตั้งได้ผ่าน npm:<br>*(This script requires `dotenv` and `ora`. You can install them via npm:)*
     ```bash
-    ./chatloop.js
+    npm install
     ```
 
-#### Example Conversation
-
-```
-🤖 Ready to chat! Type /help for commands.
-👤: What files are in this directory?
-🤖: Sure, let me check for you... [CMD]ls -la[/CMD]
-
-✨ The AI wants to run the command: ls -la
-👉 Do you authorize this command?: yes
-✅ Command 'ls -la' executed successfully.
-... (command output) ...
-🤖: This directory contains .env, .env.example, chatloop.js, and package.json. Can I help with anything else? 😊
-```
-
-### 🐞 Debugging
-
-To see detailed logs, enable debug mode in your `.env` file:
-```ini
-DEBUG_MODE=true
-```
-
----
-
-## 🇹🇭 Thai Version (ภาษาไทย)
-
-แชทบอทอัจฉริยะบน Command Line ที่ให้คุณสามารถสั่งรันคำสั่งในเครื่องได้โดยตรง ขับเคลื่อนด้วย AI ผ่าน Workflow ของ n8n ที่คุณปรับแต่งเองได้
-
-### 🚀 หลักการทำงาน (How it Works)
-
-การทำงานของแชทบอทนี้มีขั้นตอนง่ายๆ ดังนี้:
-
-`คุณ (Terminal)` ↔️ `CLI Script (chatloop.js)` ↔️ `n8n Webhook` ↔️ `AI Model (OpenAI, Gemini, etc.)`
-
-1.  คุณพิมพ์ข้อความในเทอร์มินัล
-2.  สคริปต์ `chatloop.js` ส่งข้อความของคุณไปยัง n8n Webhook
-3.  n8n Workflow ประมวลผลข้อความด้วย AI Model ที่คุณเลือก
-4.  AI ตอบกลับมา และสคริปต์จะแสดงผลลัพธ์ในเทอร์มินัลของคุณ
-5.  หาก AI ต้องการรันคำสั่ง, สคริปต์จะขออนุญาตจากคุณก่อนเสมอ
-
-### ✨ Features
-
-*   **Interactive Chat:** พูดคุยกับ AI ได้ต่อเนื่องบนเทอร์มินัลของคุณ
-*   **System Command Execution:** AI สามารถวิเคราะห์และร้องขอให้รันคำสั่ง shell (เช่น `ls -la`, `cat file.txt`) เพื่อช่วยคุณทำงานได้
-*   **n8n Integration:** เชื่อมต่อกับ AI Workflow ที่คุณสร้างขึ้นเองบน n8n ได้อย่างง่ายดาย
-*   **Natural Language Confirmation:** ยืนยันการรันคำสั่งด้วยภาษาพูดที่เป็นธรรมชาติ (เช่น "ได้เลย", "ok", "y")
-*   **Slash Commands:** มีคำสั่งพิเศษช่วยให้ใช้งานสะดวกขึ้น (`/help`, `/clear`, `/exit`)
-*   **Debug Mode:** โหมดสำหรับนักพัฒนาเพื่อดูการทำงานเบื้องหลัง
-
-### 🎬 ตัวอย่างการใช้งาน (วิดีโอ)
-
-[![AI CLI Chat Demo](https://img.youtube.com/vi/GHUQ3Oyn-rM/0.jpg)](https://youtu.be/GHUQ3Oyn-rM)
-
-*คลิกที่ภาพเพื่อดูวิดีโอสาธิตการใช้งานบน YouTube*
-
-### ⚙️ สิ่งที่ต้องมี (Prerequisites)
-
-*   Node.js (v20.19.1 หรือสูงกว่า)
-*   `npm` (มาพร้อมกับ Node.js)
-*   n8n instance ที่ทำงานอยู่ (ไม่ว่าจะเป็นบน Cloud, Self-hosted, หรือ Desktop)
-
-### 🛠️ การติดตั้งและตั้งค่า (Installation and Setup)
-
-#### ขั้นตอนที่ 1: Clone the Repository
-
-```bash
-git clone <your-repository-url>
-cd ai_cli_chat
-```
-
-#### ขั้นตอนที่ 2: Install Dependencies
-
-```bash
-npm install
-```
-
-#### ขั้นตอนที่ 3: ตั้งค่า n8n Workflow
-
-> **💡 ทิป:** เพื่อความสะดวก คุณสามารถนำเข้า (import) Workflow สำเร็จรูปจากไฟล์ในโฟลเดอร์ `Workflow_For_N8N/AI_CLI_Chat_Workflow.json` เข้าไปใน n8n ของคุณได้เลย แล้วข้ามไปขั้นตอนที่ 4 ได้ทันที!
->
-> หากต้องการสร้าง Workflow ด้วยตัวเอง สามารถทำตามขั้นตอนด้านล่างนี้ได้เลย
-
-โปรเจกต์นี้ต้องการ Workflow บน n8n ที่มีโครงสร้างพื้นฐานดังนี้:
-
-`[Webhook]` → `[AI Node]` → `[Respond to Webhook]`
-
-1.  **Webhook Node (Trigger):**
-    *   **Authentication:** `Basic Auth`
-    *   **HTTP Method:** `POST`
-    *   **Respond:** `When webhook is called`
-    *   **Path:** ตั้งชื่อ path ที่คุณต้องการ (เช่น `ai-chat`)
-    *   เมื่อตั้งค่าเสร็จแล้ว ให้คัดลอก **Test URL** และ **Basic Auth Credentials** มาใช้ในขั้นตอนต่อไป
-
-2.  **AI Node (e.g., OpenAI, Gemini):**
-    *   เชื่อมต่อ Node นี้กับ Webhook
-    *   ตั้งค่าให้รับ Prompt จาก Input ของ Webhook โดยใช้ Expression: `{{ $json.body.prompt_msg }}`
-    *   ตั้งค่า System Prompt หรือ Persona ของ AI ตามที่คุณต้องการ
-
-3.  **Respond to Webhook Node:**
-    *   เชื่อมต่อ Node นี้กับ AI Node
-    *   ตั้งค่าให้ส่งข้อมูลกลับไปในรูปแบบ JSON โดยมี key ชื่อ `output` และมี value เป็นคำตอบจาก AI Node
-    *   **ตัวอย่าง Expression สำหรับ OpenAI:** `{{ $('OpenAI').json.choices[0].message.content }}` (อาจแตกต่างกันไปขึ้นอยู่กับ AI ที่ใช้)
-
-#### ขั้นตอนที่ 4: สร้างไฟล์ตั้งค่า (Create Configuration File)
-
-ไฟล์ `.env` ใช้สำหรับเก็บข้อมูลการตั้งค่าและข้อมูลที่เป็นความลับ (เช่น credentials) เพื่อให้สคริปต์สามารถเชื่อมต่อกับ n8n ของคุณได้อย่างถูกต้อง โดยไม่ต้องแก้ไขโค้ดโดยตรง และเพื่อความปลอดภัย เราจะไม่เก็บไฟล์นี้ไว้ใน Git repository
-
-คัดลอกไฟล์ตัวอย่าง `.env.example` ไปเป็นไฟล์ใหม่ชื่อ `.env`:
-
-```bash
-cp .env.example .env
-```
-
-เปิดไฟล์ `.env` แล้วกรอกข้อมูล:
-
-```ini
-# ที่อยู่ของ n8n instance (ไม่ต้องมี http:// หรือ https://)
-AI_HOST=your-n8n-instance.com
-
-# Port ของ n8n (ถ้าใช้ port มาตรฐาน 80/443 ไม่ต้องใส่)
-AI_PORT=5678
-
-# Path ของ Webhook ที่ตั้งไว้ใน n8n (เช่น /webhook/ai-chat)
-AI_PATH=/webhook/ai-chat
-
-# ใช้ HTTPS (true) หรือ HTTP (false) ในการเชื่อมต่อ
-USE_HTTPS=true
-
-# Basic Auth credentials ที่ตั้งไว้ใน Webhook (รูปแบบ: username:password)
-AI_AUTH=your_username:your_password
-
-# เปิด/ปิดโหมดดีบัก (true/false)
-DEBUG_MODE=false
-```
-
-### 🚀 ใช้งาน (Usage)
-
-1.  **ทำให้สคริปต์สามารถรันได้ (Executable):**
+3.  **สร้างไฟล์ Environment / Create Environment File:**
+    คัดลอกไฟล์ `.env.example` ไปเป็น `.env`<br>*(Copy the `.env.example` file to `.env`:)*
     ```bash
-    chmod +x chatloop.js
+    cp .env.example .env
     ```
 
-2.  **เริ่มแชท:**
-    ```bash
-    ./chatloop.js
-    ```
+4.  **ตั้งค่าในไฟล์ `.env` / Configure the `.env` file:**
+    เปิดไฟล์ `.env` แล้วกรอกข้อมูลการเชื่อมต่อ n8n หรือ AI service ของคุณให้ครบถ้วน<br>*(Open the `.env` file and fill in the connection details for your n8n or AI service.)*
 
-#### ตัวอย่างการสนทนา
+    -   `AI_HOST`: ที่อยู่ของ n8n instance (เช่น `localhost`, `your-subdomain.n8n.cloud`) / *The address of your n8n instance (e.g., `localhost`, `your-subdomain.n8n.cloud`).*
+    -   `AI_PORT`: Port ของ n8n (เช่น `5678` สำหรับ Desktop) / *The port for your n8n instance (e.g., `5678` for Desktop).*
+    -   `AI_PATH`: Path ของ Webhook (เช่น `/webhook-test/1/ai-chat`) / *The webhook path (e.g., `/webhook-test/1/ai-chat`).*
+    -   `USE_HTTPS`: ตั้งเป็น `true` หากใช้ SSL, `false` หากไม่ใช้ / *Set to `true` for SSL, `false` otherwise.*
+    -   `AI_AUTH`: Basic Auth ในรูปแบบ `username:password` / *Basic Auth credentials in `username:password` format.*
+    -   `DEBUG_MODE`: ตั้งเป็น `true` เพื่อเปิดโหมดดีบัก / *Set to `true` to enable debug mode.*
+    -   `AI_SESSION_ID`: (ไม่บังคับ) กำหนด Session ID แบบตายตัวเพื่อใช้สนทนาต่อจาก session เดิม / *(Optional) A fixed Session ID to continue a previous conversation.*
 
+## 💻 การใช้งาน (Usage)
+
+รันสคริปต์ผ่าน Node.js: / *Run the script using Node.js:*
+```bash
+node chatloop.js
 ```
-🤖 พร้อมพูดคุยแล้วจ้า~ พิมพ์ /help ได้เลย
-👤: ในนี้มีไฟล์อะไรบ้าง
-🤖: ได้เลยค่า เดี๋ยวดูให้นะคะ... [CMD]ls -la[/CMD]
-
-✨ AI ต้องการรันคำสั่ง: ls -la
-👉 อนุญาตให้รันคำสั่งนี้มั้ยคะ?: ได้เลย
-✅ รันคำสั่ง 'ls -la' เสร็จสิ้น
-... (ผลลัพธ์ของคำสั่ง) ...
-🤖: ในนี้มีไฟล์ .env, .env.example, chatloop.js, แล้วก็ package.json จ้า มีอะไรให้ช่วยอีกมั้ยคะ 😊
+หรือถ้าคุณได้ตั้งค่า execute permission (`chmod +x chatloop.js`) แล้ว:
+```bash
+./chatloop.js
 ```
 
-### 🐞 Debugging
+### คำสั่งพิเศษ (Slash Commands)
 
-หากต้องการดู log การทำงานเบื้องหลัง ให้เปิดโหมดดีบักในไฟล์ `.env`:
-```ini
-DEBUG_MODE=true
-```
+-   `/help`: แสดงรายการคำสั่งพิเศษทั้งหมด
+-   `/clear`: เคลียร์หน้าจอเทอร์มินัล
+-   `/clear_history_chat`: ส่งคำสั่งเพื่อล้างประวัติการสนทนาในฝั่ง AI (n8n)
+-   `/exit`: ออกจากโปรแกรม

@@ -24,7 +24,7 @@
       "credentials": {
         "httpBasicAuth": {
           "id": "8xQJokQ1CgEUmG3t",
-          "name": "user authentication"
+          "name": "user authentication ไอ้"
         }
       }
     },
@@ -79,7 +79,7 @@
             },
             {
               "column": "user",
-              "value": "={{ $('Webhook').item.json.body.events[0].source.userId }}"
+              "value": "={{ $('Webhook').item.json.body.session_id }}"
             },
             {
               "column": "date",
@@ -214,7 +214,7 @@
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "=U01775d5db2200e331a2cac9a648a9731",
+        "sessionKey": "={{ $('Webhook').item.json.body.session_id }}",
         "sessionTTL": 150,
         "contextWindowLength": 15
       },
@@ -329,7 +329,7 @@
     {
       "parameters": {
         "operation": "delete",
-        "key": "U01775d5db2200e331a2cac9a648a9731"
+        "key": "={{ $('Webhook').item.json.body.session_id }}"
       },
       "type": "n8n-nodes-base.redis",
       "typeVersion": 1,
@@ -553,7 +553,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "executionTimeout": 300
   },
-  "versionId": "1d79e751-6912-49ff-a1c3-7d31d50e579d",
+  "versionId": "35f86612-08b0-431c-9697-34b5cb7e009b",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "b00c675181ef9f96109be9903d34c76e941a61ceb19210051a17305f4b056333"

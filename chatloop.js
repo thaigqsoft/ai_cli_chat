@@ -15,12 +15,14 @@
  *     แล้วส่งผลลัพธ์กลับไปให้ AI วิเคราะห์ต่อ
  *   - Natural Language Confirmation: ผู้ใช้สามารถอนุญาตการรันคำสั่งด้วยภาษาธรรมชาติ (เช่น "yes", "ok", "ได้เลย")
  *   - Asynchronous Operations: ใช้ async/await เพื่อจัดการ I/O แบบไม่ปิดกั้น ทั้งการรับ input, การเรียก API, และการรันคำสั่ง
+ *   - Session Management: กำหนด Session ID ที่ไม่ซ้ำกันสำหรับการรันแต่ละครั้ง หรือใช้ ID เดิมจาก environment variable (`AI_SESSION_ID`) เพื่อให้สามารถสนทนาต่อจากเดิมได้
  *   - User-Friendly Feedback: ใช้ loading spinner (`ora`) เพื่อแสดงสถานะว่า AI กำลังประมวลผล
  *   - Slash Commands: รองรับคำสั่งพิเศษเช่น `/help`, `/clear`, และ `/exit`
  *   - Debug Mode: มีโหมดดีบักที่เปิดใช้งานผ่าน environment variable เพื่อดู log การทำงานโดยละเอียด
  *
  * @how_it_works
  *   1. Initialization: สคริปต์จะโหลดค่าต่าง ๆ (API host, port, auth) จากไฟล์ `.env`
+ *      และกำหนด Session ID สำหรับการสนทนา (ใช้ค่าจาก `AI_SESSION_ID` หากมี หรือสร้างขึ้นใหม่)
  *   2. Main Loop: เริ่มต้น `while` loop ที่ไม่สิ้นสุดเพื่อรอรับ input จากผู้ใช้ผ่าน `readline`
  *   3. AI Request: input ของผู้ใช้จะถูกส่งไปเป็น prompt ให้กับ AI service
  *   4. Response Parsing: สคริปต์จะตรวจสอบการตอบกลับของ AI
@@ -41,10 +43,15 @@ const readline = require('readline');
 const { exec } = require('child_process');
 const http = require('http');
 const https = require('https');
+const { randomUUID } = require('crypto');
 const ora = require('ora').default;
 
 // กำหนดโหมด Debug จาก Environment Variable
 const IS_DEBUG_MODE = process.env.DEBUG_MODE === 'true' || process.env.DEBUG_MODE === '1';
+
+// กำหนด Session ID จาก Environment Variable หรือสร้างขึ้นมาใหม่
+// เพื่อให้ Webhook (n8n) สามารถแยกแยะแต่ละ session การสนทนาได้
+const SESSION_ID = process.env.AI_SESSION_ID || randomUUID();
 
 // Helper function สำหรับ Debug Log
 const debugLog = (...args) => {
@@ -52,6 +59,10 @@ const debugLog = (...args) => {
     console.log('[DEBUG]', ...args);
   }
 };
+
+if (IS_DEBUG_MODE) {
+  debugLog(`Using Session ID: ${SESSION_ID}`);
+}
 
 // เตรียม readline
 const rl = readline.createInterface({
@@ -79,7 +90,11 @@ const showHelp = () => {
 // ฟังก์ชันส่งข้อความไปยัง AI
 async function sendToAI(prompt) {
   return new Promise((resolve, reject) => {
-    const data = JSON.stringify({ prompt_msg: prompt });
+    const payload = {
+      prompt_msg: prompt,
+      session_id: SESSION_ID
+    };
+    const data = JSON.stringify(payload);
 
     // เลือกใช้ http หรือ https ตามการตั้งค่าใน .env
     const useHttps = process.env.USE_HTTPS === 'true';
