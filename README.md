@@ -44,6 +44,19 @@ AI CLI Chat คืออินเทอร์เฟซบรรทัดคำ�
 
 ### 🚀 การติดตั้งและเริ่มต้นใช้งาน
 
+#### สิ่งที่ต้องมี
+- Node.js (แนะนำเวอร์ชัน 16 ขึ้นไป)
+- Git
+- n8n instance (สำหรับรัน workflow ตัวอย่าง)
+
+#### การตั้งค่า Backend (n8n)
+CLI นี้ต้องการเชื่อมต่อกับ AI ผ่าน HTTP API ในโปรเจกต์นี้มีตัวอย่าง workflow สำหรับ n8n ให้ในไฟล์:
+`Workflow_For_N8N/API_GenAI.json`
+
+คุณสามารถนำเข้าไฟล์นี้ไปใช้ใน n8n ของคุณได้เลย จากนั้นอย่าลืมตั้งค่า API URL และข้อมูลยืนยันตัวตนในไฟล์ `.env` ของโปรเจกต์นี้ให้ถูกต้อง
+
+#### การติดตั้ง
+
 ```bash
 git clone <your-repository-url>
 cd <repository-directory>
@@ -127,6 +140,13 @@ Ideal for developers or anyone looking for a smart and interactive terminal assi
 
 - Node.js (v16 or later recommended)
 - Git
+- An n8n instance (to run the example workflow)
+
+### Backend Setup (n8n)
+This CLI connects to an AI via an HTTP API. An example n8n workflow is provided in the repository:
+`Workflow_For_N8N/API_GenAI.json`
+
+You can import this file into your n8n instance. Then, make sure to configure the API URL and credentials in the `.env` file of this project accordingly.
 
 ### Installation
 
