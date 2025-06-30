@@ -21,6 +21,7 @@ AI CLI Chat คืออินเทอร์เฟซบรรทัดคำ�
 - 🔁 วนรับ-ส่งข้อความกับ AI อย่างต่อเนื่อง
 - 🤝 เชื่อมต่อ AI ผ่าน HTTP API (เช่น n8n workflow)
 - 💻 รันคำสั่ง shell ได้ พร้อมระบบขออนุญาต
+- ✅ **ข้ามการยืนยัน**: สามารถตั้งค่าให้รันคำสั่งอัตโนมัติโดยไม่ต้องถาม (`AUTO_CONFIRM_CMD=true`) ซึ่งสะดวกแต่ต้องใช้ด้วยความระมัดระวัง
 - 🗣️ ยืนยันด้วยภาษาธรรมชาติ เช่น "โอเค", "ได้เลย"
 - ⚡ ใช้ `async/await` จัดการ I/O แบบไม่บล็อก
 - 🆔 รองรับ session ID แบบสุ่มหรือกำหนดเอง
@@ -100,6 +101,9 @@ Ideal for developers or anyone looking for a smart and interactive terminal assi
 - 💻 **System Command Execution**  
   AI can suggest shell commands (e.g., `ls -la`, `cat file.txt`)  
   and requests user permission before executing
+
+- ✅ **Auto-Confirmation**  
+  Option to automatically execute suggested commands without prompting (`AUTO_CONFIRM_CMD=true`) for convenience (use with caution)
 
 - 🗣️ **Natural Language Confirmation**  
   Accepts replies like "yes", "okay", "sure", "go ahead"
