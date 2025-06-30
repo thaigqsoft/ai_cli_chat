@@ -48,6 +48,7 @@ const ora = require('ora').default;
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const chalk = require('chalk');
 
 // กำหนดโหมด Debug จาก Environment Variable
 const IS_DEBUG_MODE = process.env.DEBUG_MODE === 'true' || process.env.DEBUG_MODE === '1';
@@ -155,16 +156,16 @@ process.on('exit', () => {
 
 // ฟังก์ชันแสดง help
 const showHelp = () => {
-  console.log(`
+  console.log(chalk.yellow(`
 📚 คำสั่งพิเศษ:
-  /show_history       แสดงประวัติการสนทนาใน session นี้
-  /show_full_history  แสดงประวัติทั้งหมดที่บันทึกไว้
-  /clear_history_chat ล้างประวัติการสนทนาในฝั่ง AI
-  /clear              เคลียร์หน้าจอ
-  /help               แสดงคำสั่งทั้งหมด
-  /exit               ออกจากโปรแกรม
+  ${chalk.cyan('/show_history')}       แสดงประวัติการสนทนาใน session นี้
+  ${chalk.cyan('/show_full_history')}  แสดงประวัติทั้งหมดที่บันทึกไว้
+  ${chalk.cyan('/clear_history_chat')} ล้างประวัติการสนทนาในฝั่ง AI
+  ${chalk.cyan('/clear')}              เคลียร์หน้าจอ
+  ${chalk.cyan('/help')}               แสดงคำสั่งทั้งหมด
+  ${chalk.cyan('/exit')}               ออกจากโปรแกรม
   (เร็วๆ นี้จะมี /save, /theme, /log ด้วยน้า~)
-`);
+`));
 };
 
 // ฟังก์ชันแสดงประวัติคำสั่งทั้งหมดที่บันทึกไว้ในไฟล์
@@ -174,14 +175,14 @@ const showFullHistory = () => {
     if (fs.existsSync(HISTORY_FILE_PATH)) {
       const historyContent = fs.readFileSync(HISTORY_FILE_PATH, 'utf-8').trim();
       if (historyContent) {
-        console.log('\n--- 📜 ประวัติคำสั่งทั้งหมด (จาก history.log) ---');
+        console.log(chalk.gray('\n--- 📜 ประวัติคำสั่งทั้งหมด (จาก history.log) ---'));
         console.log(historyContent);
-        console.log('-------------------------------------------------');
+        console.log(chalk.gray('-------------------------------------------------'));
       } else {
-        console.log('📜 ไฟล์ประวัติ (history.log) ว่างเปล่า');
+        console.log(chalk.yellow('📜 ไฟล์ประวัติ (history.log) ว่างเปล่า'));
       }
     } else {
-      console.log('📜 ไม่พบไฟล์ประวัติ (history.log)');
+      console.log(chalk.yellow('📜 ไม่พบไฟล์ประวัติ (history.log)'));
     }
   } catch (err) {
     console.error('⚠️ ไม่สามารถอ่านไฟล์ประวัติคำสั่งได้:', err.message);
@@ -196,12 +197,12 @@ const showHistory = () => {
   const currentHistory = rl.history;
 
   if (currentHistory && currentHistory.length > 0) {
-    console.log('\n--- 📜 ประวัติการสนทนาใน Session นี้ ---');
+    console.log(chalk.gray('\n--- 📜 ประวัติการสนทนาใน Session นี้ ---'));
     // แสดงผลจากใหม่ไปเก่า (ตามที่ rl.history เก็บไว้)
     console.log(currentHistory.join('\n'));
-    console.log('-----------------------------------------');
+    console.log(chalk.gray('-----------------------------------------'));
   } else {
-    console.log('📜 ยังไม่มีประวัติการสนทนาใน Session นี้');
+    console.log(chalk.yellow('📜 ยังไม่มีประวัติการสนทนาใน Session นี้'));
   }
 };
 
@@ -241,25 +242,25 @@ async function sendToAI(prompt) {
 
       res.on('end', () => {
         if (res.statusCode !== 200) {
-          reject(new Error(`❌ HTTP ${res.statusCode}: ${res.statusMessage}\n${body}`));
+          reject(new Error(chalk.red(`❌ HTTP ${res.statusCode}: ${res.statusMessage}\n${body}`)));
           return;
         }
         try {
           const json = JSON.parse(body);
-          resolve(json.output || '[ไม่มีข้อความจาก AI]');
+          resolve(json.output || chalk.gray('[ไม่มีข้อความจาก AI]'));
         } catch (e) {
-          reject(new Error('❌ ไม่สามารถแปลง JSON ได้:\n' + body));
+          reject(new Error(chalk.red('❌ ไม่สามารถแปลง JSON ได้:\n' + body)));
         }
       });
     });
 
     req.on('timeout', () => {
       req.destroy();
-      reject(new Error('❌ การร้องขอหมดเวลา (4 นาที)'));
+      reject(new Error(chalk.red('❌ การร้องขอหมดเวลา (4 นาที)')));
     });
 
     req.on('error', (error) => { // This handles network errors
-      reject(new Error('❌ การเชื่อมต่อล้มเหลว: ' + error.message));
+      reject(new Error(chalk.red('❌ การเชื่อมต่อล้มเหลว: ' + error.message)));
     });
 
     req.write(data);
@@ -277,7 +278,7 @@ function executeSystemCommand(command) {
   debugLog(`Executing command: ${command}`);
   return new Promise((resolve) => {
     if (!command) {
-      resolve("❌ ไม่มีคำสั่งให้รัน");
+      resolve(chalk.red("❌ ไม่มีคำสั่งให้รัน"));
       return;
     }
     // กำหนด timeout เผื่อคำสั่งค้าง
@@ -285,7 +286,7 @@ function executeSystemCommand(command) {
       if (error) {
         // เมื่อเกิด error เราจะไม่ reject แต่จะ resolve พร้อมข้อความ error
         // เพื่อให้ AI สามารถเห็นข้อผิดพลาดและอาจจะแก้ไขคำสั่งได้
-        const errorMessage = `❌ เกิดข้อผิดพลาดตอนรันคำสั่ง: ${error.message}\n--- stderr ---\n${stderr}`;
+        const errorMessage = chalk.red(`❌ เกิดข้อผิดพลาดตอนรันคำสั่ง: ${error.message}\n--- stderr ---\n${stderr}`);
         debugLog(errorMessage);
         resolve(errorMessage);
         return;
@@ -312,11 +313,11 @@ function isAffirmative(text) {
 
 // 🔁 วนรับข้อความเรื่อย ๆ ไม่มีวันจบ
 async function mainLoop() {
-  console.log('🤖 พร้อมพูดคุยแล้วจ้า~ พิมพ์ /help ได้เลย');
+  console.log(chalk.green('🤖 พร้อมพูดคุยแล้วจ้า~ พิมพ์ /help ได้เลย'));
 
   while (true) {
     debugLog('>> เริ่มต้น while loop รอบใหม่');
-    const input = await ask('👤: ');
+    const input = await ask(chalk.cyan('👤: '));
     const text = input.trim();
     debugLog('🔁 rl.history:', rl.history);
     // --- START: History and Slash Command Handling ---
@@ -335,16 +336,16 @@ async function mainLoop() {
     if (!isPromptForAI) {
       switch (text) {
         case '/exit':
-          console.log('👋 บ๊ายบาย~ แล้วพบกันใหม่นะคะ');
+          console.log(chalk.magenta('👋 บ๊ายบาย~ แล้วพบกันใหม่นะคะ'));
           rl.close();
           // process.on('exit') จะจัดการบันทึกประวัติให้โดยอัตโนมัติ
-          return; // ออกจากฟังก์ชัน mainLoop เพื่อจบโปรแกรม
+          process.exit(0); // จบการทำงานของโปรแกรม ซึ่งจะ trigger 'exit' event
         case '/help':
           showHelp();
           break;
         case '/clear':
           console.clear();
-          console.log('🤖 หน้าจอโล่งแล้ว พร้อมคุยต่อเลยจ้า~');
+          console.log(chalk.green('🤖 หน้าจอโล่งแล้ว พร้อมคุยต่อเลยจ้า~'));
           break;
         case '/show_history':
           showHistory();
@@ -355,14 +356,14 @@ async function mainLoop() {
         case '/clear_history_chat':
           // การทำงานส่วนนี้เป็น async เลยต้องครอบด้วย IIFE (Immediately Invoked Function Expression)
           await (async () => {
-            const spinner = ora('🗑️ กำลังส่งคำสั่งล้างประวัติให้ AI...');
+            const spinner = ora({ text: '🗑️ กำลังส่งคำสั่งล้างประวัติให้ AI...', color: 'yellow' });
             try {
               rl.pause();
               spinner.start();
               await sendToAI('/clear_history_chat');
-              spinner.succeed('✅ ส่งคำสั่งล้างประวัติในฝั่ง AI เรียบร้อยแล้วค่ะ');
+              spinner.succeed(chalk.green('✅ ส่งคำสั่งล้างประวัติในฝั่ง AI เรียบร้อยแล้วค่ะ'));
             } catch (err) {
-              spinner.fail(String(err.message || err));
+              spinner.fail(chalk.red(String(err.message || err)));
             } finally {
               if (spinner.isSpinning) spinner.stop();
               rl.resume();
@@ -370,7 +371,7 @@ async function mainLoop() {
           })();
           break;
         default:
-          console.log(`🤔 ไม่รู้จักคำสั่ง: ${text}`);
+          console.log(chalk.yellow(`🤔 ไม่รู้จักคำสั่ง: ${text}`));
           break;
       }
       continue;
@@ -379,7 +380,7 @@ async function mainLoop() {
     
     let currentPrompt = text;
     let isInteractionDone = false;
-    const spinner = ora('🤔 กำลังคิด...');
+    const spinner = ora({ text: '🤔 กำลังคิด...', color: 'yellow' });
 
     try {
       rl.pause(); // หยุด readline ชั่วคราวระหว่างรอ AI และรันคำสั่ง
@@ -400,34 +401,36 @@ async function mainLoop() {
           const aiMessage = reply.replace(commandMatch[0], '').trim();
 
           if (aiMessage) {
-            console.log(`🤖: ${aiMessage}`);
+            console.log(chalk.yellow(`🤖: ${aiMessage}`));
           }
-          console.log(`\n✨ AI ต้องการรันคำสั่ง: ${commandToExecute}`);
+          console.log(chalk.blue.bold(`\n✨ AI ต้องการรันคำสั่ง: ${commandToExecute}`));
 
           // ขออนุญาตผู้ใช้ก่อนรันคำสั่งเพื่อความปลอดภัย
           // Resume readline ชั่วคราวเพื่อรอรับ input
           rl.resume();
-          const confirmation = await ask('👉 อนุญาตให้รันคำสั่งนี้มั้ยคะ?: ');
+          const confirmation = await ask(chalk.yellow('👉 อนุญาตให้รันคำสั่งนี้มั้ยคะ?: '));
           // เราจะไม่ลบคำยืนยันออกจาก history ที่นี่แล้ว แต่จะไปกรองออกตอนบันทึกไฟล์
           // Pause กลับไปเหมือนเดิมเพื่อให้ spinner ทำงานได้ปกติ
           rl.pause();
 
           if (!isAffirmative(confirmation)) {
-            console.log('🚫 โอเคค่า งั้นยกเลิกคำสั่งนะคะ');
+            console.log(chalk.gray('🚫 โอเคค่า งั้นยกเลิกคำสั่งนะคะ'));
             isInteractionDone = true;
             continue;
           }
 
           spinner.text = `⚙️ กำลังรัน: ${commandToExecute}`;
+          spinner.color = 'blue';
           spinner.start();
           const commandResult = await executeSystemCommand(commandToExecute);
-          spinner.succeed(`✅ รันคำสั่ง '${commandToExecute}' เสร็จสิ้น`);
+          spinner.succeed(chalk.green(`✅ รันคำสั่ง '${commandToExecute}' เสร็จสิ้น`));
 
-          console.log(`\n--- ผลลัพธ์ของคำสั่ง ---\n${commandResult}\n----------------------\n`);
+          console.log(chalk.gray(`\n--- ผลลัพธ์ของคำสั่ง ---\n${commandResult}\n----------------------\n`));
 
           // --- START: Handle large command output by chunking ---
           if (commandResult.length > MAX_CHUNK_SIZE) {
             spinner.text = '📝 ผลลัพธ์มีขนาดใหญ่ กำลังแบ่งและส่งให้ AI ทีละส่วน...';
+            spinner.color = 'magenta';
             spinner.start();
 
             const chunks = [];
@@ -463,12 +466,12 @@ async function mainLoop() {
           spinner.start(); // เริ่ม spinner อีกครั้งเพื่อรอ `sendToAI` ในรอบถัดไปของ loop
         } else {
           // ถ้าไม่มีคำสั่ง นี่คือคำตอบสุดท้ายจาก AI
-          console.log(`🤖: ${reply}`);
+          console.log(chalk.yellow(`🤖: ${reply}`));
           isInteractionDone = true;
         }
       }
     } catch (err) {
-      spinner.fail(String(err.message || err));
+      spinner.fail(chalk.red(String(err.message || err)));
       debugLog('เกิดข้อผิดพลาดใน interaction loop');
     } finally {
       if (spinner.isSpinning) {
